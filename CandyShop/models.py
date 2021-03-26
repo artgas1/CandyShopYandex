@@ -11,7 +11,7 @@ class Courier(models.Model):
         BIKE = 'bike', _('Велокурьер')
         CAR = 'car', _('Курьер на автомобиле')
 
-    courier_id = models.IntegerField(unique=True, validators=[MinValueValidator(1)], primary_key=True, editable=False)
+    courier_id = models.IntegerField(unique=True, validators=[MinValueValidator(1)], primary_key=True)
     courier_type = models.CharField(max_length=4, choices=CourierType.choices)
-    regions = modelsp.ArrayField(models.IntegerField())
-    working_hours = modelsp.ArrayField(models.TimeField())
+    regions = modelsp.ArrayField(models.IntegerField(), blank=False)
+    working_hours = modelsp.ArrayField(models.CharField(max_length=100), blank=False)
