@@ -19,3 +19,18 @@ class CourierViewSet(viewsets.ModelViewSet):
 
     def get_exception_handler(self):
         return custom_exceptions.exception_couriers
+
+
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = models.Order.objects.all()
+    serializer_class = serializers.OrderSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = serializers.OrderListSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def get_exception_handler(self):
+        return custom_exceptions.exception_orders

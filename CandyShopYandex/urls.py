@@ -19,5 +19,4 @@ from CandyShop import urls_drf
 
 urlpatterns = [
                   path('admin/', admin.site.urls),
-
               ] + urls_drf.router.urls
