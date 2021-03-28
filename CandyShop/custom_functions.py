@@ -10,6 +10,19 @@ def convert_courier_type_to_weight(courier_type):
         return 50
 
 
+def convert_courier_type_to_coef(courier_type):
+    if courier_type == 'foot':
+        return 2
+    if courier_type == 'bike':
+        return 5
+    if courier_type == 'car':
+        return 9
+
+
+def convert_datetime_to_iso8601(date):
+    return date.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + 'Z'
+
+
 def check_time_intervals(working_hours, delivery_hours):
     for work in working_hours:
         for delivery in delivery_hours:

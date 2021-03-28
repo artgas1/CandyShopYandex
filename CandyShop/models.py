@@ -15,14 +15,9 @@ class Courier(models.Model):
     courier_type = models.CharField(max_length=4, choices=CourierType.choices)
     regions = modelsp.ArrayField(models.IntegerField(), blank=False)
     working_hours = modelsp.ArrayField(models.CharField(max_length=11), blank=False)
-    assign_time = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return "courier_id:{} courier_type:{} regions:{} working_hours:{} assign_time:{}".format(self.courier_id,
-                                                                                                 self.courier_type,
-                                                                                                 self.regions,
-                                                                                                 self.working_hours,
-                                                                                                 self.assign_time)
+        return "courier_id:{}".format(self.courier_id)
 
 
 class Order(models.Model):
@@ -31,12 +26,9 @@ class Order(models.Model):
     region = models.IntegerField()
     delivery_hours = modelsp.ArrayField(models.CharField(max_length=11), blank=False)
     courier = models.ForeignKey(Courier, on_delete=models.SET_NULL, null=True, blank=True)
-    # assign_time = models.DateTimeField(null=True, blank=True)
+    assign_time = models.DateTimeField(null=True, blank=True)
     complete_time = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return "order_id:{} weight:{} region:{} delivery_hours:{} | courier:{}".format(self.order_id,
-                                                                                       self.weight,
-                                                                                       self.region,
-                                                                                       self.delivery_hours,
-                                                                                       self.courier)
+        return "order_id:{} | courier:{}".format(self.order_id,
+                                                 self.courier)

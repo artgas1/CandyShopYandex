@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django_pdb',
+    # 'django_pdb',
     'CandyShop.apps.CandyshopConfig',
     'rest_framework'
 ]
@@ -54,7 +54,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'django_pdb.middleware.PdbMiddleware'
+    # 'django_pdb.middleware.PdbMiddleware'
 ]
 
 ROOT_URLCONF = 'CandyShopYandex.urls'

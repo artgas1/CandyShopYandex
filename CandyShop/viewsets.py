@@ -50,16 +50,14 @@ class OrderViewSet(viewsets.ModelViewSet):
         max_weight = custom_functions.convert_courier_type_to_weight(courier.courier_type) - sum(
             courier_orders_weight)
 
-        for order in models.Order.objects.all():
-            if not order.complete_time \
-                    and order.weight <= max_weight \
+        for order in models.Order.objects.filter(complete_time__isnull=True, courier__isnull=True).order_by("order_id"):
+            if order.weight <= max_weight \
                     and order.region in courier.regions \
-                    and custom_functions.check_time_intervals(courier.working_hours, order.delivery_hours) \
-                    and not order.courier:
+                    and custom_functions.check_time_intervals(courier.working_hours, order.delivery_hours):
                 order_obj = models.Order.objects.get(order_id=order.order_id)
                 order_obj.courier = courier
                 max_weight -= order_obj.weight
-                courier.assign_time = datetime.utcnow()
+                order_obj.assign_time = datetime.utcnow()
                 order_obj.save()
                 courier.save()
 
@@ -70,7 +68,9 @@ class OrderViewSet(viewsets.ModelViewSet):
         for order in courier.order_set.all():
             if not order.complete_time:
                 resp['orders'].append({"id": order.order_id})
-        resp.update({"assign_time": courier.assign_time.strftime("%Y-%m-%dT%H:%M:%S.%f"[:-3] + 'Z')})
+        last_successful_assigned_order = courier.order_set.order_by("-assign_time")[0]
+        resp.update(
+            {"assign_time": custom_functions.convert_datetime_to_iso8601(last_successful_assigned_order.assign_time)})
         return Response(resp, status=200)
 
     @action(detail=False, methods=['post'])
