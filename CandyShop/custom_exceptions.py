@@ -17,7 +17,11 @@ def exception_return_only_id(exc, context, instance):
     text_id = "{}_id".format(instance)
 
     response = exception_handler(exc, context)
+    if not response:
+        return Response(status=400)
+
     exception_data = response.data.get("data")
+
     if not check_if_error_in_instance(exception_data):
         return response
 

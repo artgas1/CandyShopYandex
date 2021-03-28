@@ -34,14 +34,19 @@ class TimeIntervalField(serializers.Field):
 
 class CourierSerializer(serializers.ModelSerializer):
     working_hours = serializers.ListField(child=TimeIntervalField())
+    rating = serializers.SerializerMethodField()
 
     def update(self, instance, validated_data):
         validated_data.pop('courier_id', None)  # prevent courier_id from being updated
         return super().update(instance, validated_data)
 
+    def get_rating(self, courier):
+        orders_completed = courier.order_set.filter(complete_time__isnull=False)
+        print(orders_completed)
+
     class Meta:
         model = models.Courier
-        fields = ['courier_id', 'courier_type', 'regions', 'working_hours']
+        fields = ['courier_id', 'courier_type', 'regions', 'working_hours', 'rating']
 
 
 class CourierListSerializer(serializers.Serializer):
@@ -82,3 +87,34 @@ class OrderListSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         return {"orders": [{"id": order.order_id} for order in instance.get("data")]}
+
+
+class AssignSerializer(serializers.Serializer):
+    courier_id = serializers.IntegerField()
+
+    def validate_courier_id(self, attrs):
+        if models.Courier.objects.filter(courier_id=attrs).count():
+            return attrs
+        raise serializers.ValidationError("Courier with this id does not exist.")
+
+
+class CompleteSerializer(serializers.Serializer):
+    courier_id = serializers.IntegerField()
+    order_id = serializers.IntegerField()
+    complete_time = serializers.DateTimeField(input_formats=["%Y-%m-%dT%H:%M:%S.%fZ"])
+
+    def validate_courier_id(self, attrs):
+        if models.Courier.objects.filter(courier_id=attrs).count():
+            return attrs
+        raise serializers.ValidationError("Courier with this id does not exist.")
+
+    def validate_order_id(self, attrs):
+        if models.Order.objects.filter(order_id=attrs).count():
+            return attrs
+        raise serializers.ValidationError("Order with this id does not exist.")
+
+    def validate(self, attrs):
+        courier = models.Courier.objects.get(courier_id=attrs.get("courier_id"))
+        order = models.Order.objects.get(order_id=attrs.get("order_id"))
+        if order not in courier.order_set.all():
+            raise serializers.ValidationError("Order is not assigned to this courier.")
