@@ -69,12 +69,13 @@ class OrderViewSet(viewsets.ModelViewSet):
                 order = models.Order.objects.get(order_id=order.order_id)
                 order.courier = courier
                 max_weight -= order.weight
+
                 order.assign_time = datetime.utcnow()
                 order.save()
                 courier.save()
 
         if not courier.order_set.exists():
-            return Response([], status=200)
+            return Response({"orders": []}, status=200)
 
         resp = {"orders": []}
         for order in courier.order_set.all():
