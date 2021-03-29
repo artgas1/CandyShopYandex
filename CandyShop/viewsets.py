@@ -7,6 +7,7 @@ from CandyShop import custom_exceptions
 from rest_framework.decorators import action
 from datetime import datetime
 from CandyShop import custom_functions
+from django.shortcuts import get_object_or_404
 
 
 class CourierViewSet(viewsets.ModelViewSet):
@@ -19,6 +20,17 @@ class CourierViewSet(viewsets.ModelViewSet):
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def retrieve(self, request, *args, **kwargs):
+        courier = get_object_or_404(self.queryset, pk=kwargs.get("pk"))
+        serializer = self.serializer_class(courier)
+        data = serializer.data
+        rating = custom_functions.get_rating(courier)
+        if rating is not None:
+            data['rating'] = rating
+        earnings = custom_functions.get_earnings(courier)
+        data['earnings'] = earnings
+        return Response(data, status=status.HTTP_200_OK)
 
     def get_exception_handler(self):
         return custom_exceptions.exception_couriers
@@ -54,11 +66,11 @@ class OrderViewSet(viewsets.ModelViewSet):
             if order.weight <= max_weight \
                     and order.region in courier.regions \
                     and custom_functions.check_time_intervals(courier.working_hours, order.delivery_hours):
-                order_obj = models.Order.objects.get(order_id=order.order_id)
-                order_obj.courier = courier
-                max_weight -= order_obj.weight
-                order_obj.assign_time = datetime.utcnow()
-                order_obj.save()
+                order = models.Order.objects.get(order_id=order.order_id)
+                order.courier = courier
+                max_weight -= order.weight
+                order.assign_time = datetime.utcnow()
+                order.save()
                 courier.save()
 
         if not courier.order_set.exists():

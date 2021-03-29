@@ -8,6 +8,7 @@ time_format = "%H:%M"
 
 class TimeInterval:
     def __init__(self, time):
+
         try:
             start, end = time.split('-')
             self.start = datetime.strptime(start, time_format)
@@ -35,55 +36,14 @@ class TimeIntervalField(serializers.Field):
 
 class CourierSerializer(serializers.ModelSerializer):
     working_hours = serializers.ListField(child=TimeIntervalField())
-    rating = serializers.SerializerMethodField()
-    earnings = serializers.SerializerMethodField()
 
     def update(self, instance, validated_data):
         validated_data.pop('courier_id', None)  # prevent courier_id from being updated
         return super().update(instance, validated_data)
 
-    def get_rating(self, courier):
-        print(courier, courier.regions)
-        try:
-            if not courier.order_set.filter(complete_time__isnull=False).count():
-                return
-            regions = courier.regions
-            delivery_time_regions = []
-            for region in regions:
-                delivery_times = []
-                orders_completed = courier.order_set.filter(complete_time__isnull=False, region=region) \
-                    .order_by("complete_time")
-                if not orders_completed.count():
-                    continue
-                delivery_times.append(
-                    (orders_completed[0].complete_time - orders_completed[0].assign_time).total_seconds()
-                )
-                for order_index in range(1, len(orders_completed)):
-                    delivery_times.append(
-                        (orders_completed[order_index].complete_time - orders_completed[
-                            order_index - 1].complete_time).total_seconds()
-                    )
-                delivery_time_regions.append((sum(delivery_times) / len(delivery_times)))
-            minimal = min(delivery_time_regions)
-            return (60 * 60 - min(minimal, 60 * 60)) / (60 * 60) * 5
-        except Exception as e:
-            return str(e)
-
-    def get_earnings(self, courier):
-        orders_completed_count = courier.order_set.filter(complete_time__isnull=False).count()
-        if not orders_completed_count:
-            return 0
-        return orders_completed_count * custom_functions.convert_courier_type_to_coef(courier.courier_type)
-
-    def to_representation(self, courier):
-        data = super(CourierSerializer, self).to_representation(courier)
-        if not courier.order_set.filter(complete_time__isnull=False).count():
-            data.pop("rating")
-        return data
-
     class Meta:
         model = models.Courier
-        fields = ['courier_id', 'courier_type', 'regions', 'working_hours', 'rating', 'earnings']
+        fields = ['courier_id', 'courier_type', 'regions', 'working_hours']
 
 
 class CourierListSerializer(serializers.Serializer):
@@ -101,7 +61,7 @@ class CourierListSerializer(serializers.Serializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    delivery_hours = serializers.ListField(child=TimeIntervalField())
+    delivery_hours = serializers.ListField(child=TimeIntervalField(), allow_empty=False)
 
     def update(self, instance, validated_data):
         validated_data.pop('order_id', None)  # prevent courier_id from being updated
@@ -151,7 +111,6 @@ class CompleteSerializer(serializers.Serializer):
         raise serializers.ValidationError("Order with this id does not exist.")
 
     def validate(self, attrs):
-        print(attrs)
         courier = models.Courier.objects.get(courier_id=attrs.get("courier_id"))
         order = models.Order.objects.get(order_id=attrs.get("order_id"))
         if order not in courier.order_set.filter(complete_time__isnull=True):

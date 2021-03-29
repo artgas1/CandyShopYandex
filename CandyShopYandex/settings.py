@@ -62,8 +62,7 @@ ROOT_URLCONF = 'CandyShopYandex.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -136,4 +135,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+# DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
