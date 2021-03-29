@@ -28,9 +28,9 @@ if os.path.isfile(dotenv_file):
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ['DEBUG']
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.environ['ALLOWED_HOSTS']
 
 # Application definition
 
@@ -89,7 +89,7 @@ WSGI_APPLICATION = 'CandyShopYandex.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
+        'NAME': os.environ['DATABASE_NAME'],
         'USER': 'postgres',
         'PASSWORD': os.environ['PASSWORD_DB'],
         'HOST': 'localhost',
