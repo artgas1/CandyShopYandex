@@ -1,4 +1,4 @@
-# PROJECT_NAME
+# Candy Shop Yandex
 
 ## Развертывание
 
